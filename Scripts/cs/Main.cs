@@ -10,6 +10,7 @@ public partial class Main : Control
     // Ini adalah kunci optimisasi untuk performa yang lancar
     private Image videoImage = null;
     private ImageTexture videoTexture = null;
+    
     private TextureRect textureRect;
     
     // Jersey switching
