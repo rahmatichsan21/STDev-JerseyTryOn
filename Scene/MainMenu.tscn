@@ -1,0 +1,41 @@
+[gd_scene load_steps=5 format=3 uid="uid://bav1qttrgmd2r"]
+
+[ext_resource type="Script" path="res://Scripts/cs/MainMenu.cs" id="1_d4lpm"]
+[ext_resource type="Texture2D" uid="uid://c37act2iqnjt2" path="res://Assets/Main Menu.png" id="1_utq4b"]
+[ext_resource type="Texture2D" uid="uid://kal0evmc6b3y" path="res://Assets/Start Button.png" id="2_hl848"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yej1n"]
+texture = ExtResource("1_utq4b")
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_d4lpm")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_yej1n")
+
+[node name="TextureButton" type="TextureButton" parent="Panel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.382
+anchor_top = 0.634
+anchor_right = 0.647
+anchor_bottom = 0.766
+offset_left = -0.0640259
+offset_top = 0.167999
+offset_right = -0.343994
+offset_bottom = 14.632
+grow_horizontal = 2
+grow_vertical = 0
+texture_normal = ExtResource("2_hl848")
