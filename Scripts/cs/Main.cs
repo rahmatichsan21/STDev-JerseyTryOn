@@ -10,17 +10,47 @@ public partial class Main : Control
     // Ini adalah kunci optimisasi untuk performa yang lancar
     private Image videoImage = null;
     private ImageTexture videoTexture = null;
-    
+
     private TextureRect textureRect;
+    private Button captureButton;
     
-    // Jersey switching
-    private string[] availableJerseys = { "none", "brighton", "brazil", "argentina", "germany" };
-    private int currentJerseyIndex = 0;
+    private bool isCapturing = false;
+    private Image lastCapturedImage = null;
     
     public override void _Ready()
     {
         // Dapatkan referensi ke node TextureRect
         textureRect = GetNode<TextureRect>("TextureRect");
+        
+        // Get reference to capture button (adjust the path to match your scene structure)
+        // Common button paths: "CaptureButton", "Button", "Panel/CaptureButton", etc.
+        captureButton = GetNodeOrNull<Button>("CaptureButton");
+        
+        if (captureButton != null)
+        {
+            captureButton.Pressed += OnCaptureButtonPressed;
+            GD.Print("Capture button connected!");
+        }
+        else
+        {
+            GD.PrintErr("Warning: CaptureButton not found. Trying alternative paths...");
+            // Try alternative common paths
+            captureButton = GetNodeOrNull<Button>("Button");
+            if (captureButton == null)
+                captureButton = GetNodeOrNull<Button>("Panel/Button");
+            if (captureButton == null)
+                captureButton = GetNodeOrNull<Button>("UI/CaptureButton");
+            
+            if (captureButton != null)
+            {
+                captureButton.Pressed += OnCaptureButtonPressed;
+                GD.Print($"Capture button found and connected!");
+            }
+            else
+            {
+                GD.Print("No button found. Using C key as fallback.");
+            }
+        }
 
         GD.Print("Mencoba terhubung ke server Python...");
         Error err = socket.ConnectToUrl(websocketUrl);
@@ -53,7 +83,18 @@ public partial class Main : Control
             while (socket.GetAvailablePacketCount() > 0)
             {
                 byte[] packet = socket.GetPacket();
-                ProcessVideoFrame(packet);
+                
+                // Check if it's a text message (JSON command response)
+                string text = System.Text.Encoding.UTF8.GetString(packet);
+                if (text.StartsWith("{"))
+                {
+                    ProcessCommand(text);
+                }
+                else
+                {
+                    // It's a binary video frame
+                    ProcessVideoFrame(packet);
+                }
             }
         }
         else if (state == WebSocketPeer.State.Closed)
@@ -71,32 +112,44 @@ public partial class Main : Control
     {
         if (@event is InputEventKey keyEvent && keyEvent.Pressed)
         {
-            if (keyEvent.Keycode == Key.Key1)
+            if (keyEvent.Keycode == Key.C)
             {
-                ChangeJersey("none");
+                // Press C to capture and save current frame (fallback if no button)
+                CaptureAndSave();
             }
-            else if (keyEvent.Keycode == Key.Key2)
+            else if (keyEvent.Keycode == Key.R)
             {
-                ChangeJersey("brighton");
+                // Press R to resume streaming after capture
+                ResumeStreaming();
             }
-            else if (keyEvent.Keycode == Key.Key3)
+        }
+    }
+    
+    // Button handler for capture
+    private void OnCaptureButtonPressed()
+    {
+        CaptureAndSave();
+    }
+    
+    private void ProcessCommand(string jsonText)
+    {
+        try
+        {
+            var json = Json.ParseString(jsonText);
+            if (json.AsGodotDictionary().ContainsKey("type"))
             {
-                ChangeJersey("brazil");
+                string type = json.AsGodotDictionary()["type"].AsString();
+                
+                if (type == "capture_ready")
+                {
+                    GD.Print("Capture ready! Saving image...");
+                    SaveCapturedImage();
+                }
             }
-            else if (keyEvent.Keycode == Key.Key4)
-            {
-                ChangeJersey("argentina");
-            }
-            else if (keyEvent.Keycode == Key.Key5)
-            {
-                ChangeJersey("germany");
-            }
-            else if (keyEvent.Keycode == Key.Space)
-            {
-                // Cycle through jerseys with spacebar
-                currentJerseyIndex = (currentJerseyIndex + 1) % availableJerseys.Length;
-                ChangeJersey(availableJerseys[currentJerseyIndex]);
-            }
+        }
+        catch (System.Exception e)
+        {
+            GD.PrintErr($"Error parsing command: {e.Message}");
         }
     }
     
@@ -141,20 +194,82 @@ public partial class Main : Control
         }
     }
 
-    private void ChangeJersey(string jerseyName)
+    // Capture current frame and save it
+    private void CaptureAndSave()
+    {
+        if (socket.GetReadyState() == WebSocketPeer.State.Open)
+        {
+            if (videoImage != null)
+            {
+                // Store the last frame
+                lastCapturedImage = videoImage;
+                isCapturing = true;
+                
+                // Tell Python to pause streaming
+                var command = new Godot.Collections.Dictionary
+                {
+                    {"type", "save_capture"}
+                };
+                string jsonString = Json.Stringify(command);
+                socket.SendText(jsonString);
+                
+                GD.Print("Capturing frame...");
+            }
+            else
+            {
+                GD.PrintErr("No video frame available to capture!");
+            }
+        }
+        else
+        {
+            GD.PrintErr("Cannot capture: WebSocket not open.");
+        }
+    }
+    
+    // Save the captured image to disk
+    private void SaveCapturedImage()
+    {
+        if (lastCapturedImage != null)
+        {
+            // Create a timestamp for unique filename
+            string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string filename = $"user://captured_{timestamp}.png";
+            
+            // Save the image
+            Error err = lastCapturedImage.SavePng(filename);
+            
+            if (err == Error.Ok)
+            {
+                // Get the actual file path (Godot's user:// maps to a real directory)
+                string realPath = ProjectSettings.GlobalizePath(filename);
+                GD.Print($"✓ Image saved successfully to: {realPath}");
+            }
+            else
+            {
+                GD.PrintErr($"✗ Failed to save image. Error: {err}");
+            }
+            
+            isCapturing = false;
+            
+            // Auto-resume streaming after capture
+            ResumeStreaming();
+        }
+    }
+    
+    // Resume video streaming
+    private void ResumeStreaming()
     {
         if (socket.GetReadyState() == WebSocketPeer.State.Open)
         {
             var command = new Godot.Collections.Dictionary
             {
-                {"type", "change_jersey"},
-                {"jersey", jerseyName}
+                {"type", "resume"}
             };
-            
             string jsonString = Json.Stringify(command);
             socket.SendText(jsonString);
             
-            GD.Print($"Jersey changed to: {jerseyName}");
+            isCapturing = false;
+            GD.Print("Streaming resumed.");
         }
     }
 
