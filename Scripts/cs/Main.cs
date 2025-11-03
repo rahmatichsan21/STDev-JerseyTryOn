@@ -13,9 +13,11 @@ public partial class Main : Control
 
     private TextureRect textureRect;
     private Button captureButton;
+    private Button realtimeToggleButton;
     
     private bool isCapturing = false;
     private Image lastCapturedImage = null;
+    private bool isRealtimeJerseyEnabled = false;
     
     public override void _Ready()
     {
@@ -88,7 +90,7 @@ public partial class Main : Control
                 string text = System.Text.Encoding.UTF8.GetString(packet);
                 if (text.StartsWith("{"))
                 {
-                    ProcessCommand(text);
+                    HandleTextMessage(text);
                 }
                 else
                 {
@@ -131,7 +133,7 @@ public partial class Main : Control
         CaptureAndSave();
     }
     
-    private void ProcessCommand(string jsonText)
+    private void HandleTextMessage(string jsonText)
     {
         try
         {
@@ -145,11 +147,53 @@ public partial class Main : Control
                     GD.Print("Capture ready! Saving image...");
                     SaveCapturedImage();
                 }
+                else if (type == "processing_complete")
+                {
+                    bool success = json.AsGodotDictionary().ContainsKey("success") && 
+                                   (bool)json.AsGodotDictionary()["success"];
+                    if (success && json.AsGodotDictionary().ContainsKey("output_path"))
+                    {
+                        string outputPath = json.AsGodotDictionary()["output_path"].AsString();
+                        GD.Print($"✓ Jersey application complete!");
+                        GD.Print($"   Result saved to: {outputPath}");
+                        
+                        // Optionally load and display the processed image
+                        LoadProcessedImage(outputPath);
+                    }
+                    else
+                    {
+                        GD.PrintErr("✗ Jersey processing failed");
+                    }
+                }
+                else if (type == "error")
+                {
+                    string errorMsg = json.AsGodotDictionary().ContainsKey("message") ? 
+                                     json.AsGodotDictionary()["message"].AsString() : "Unknown error";
+                    GD.PrintErr($"Python error: {errorMsg}");
+                }
             }
         }
         catch (System.Exception e)
         {
             GD.PrintErr($"Error parsing command: {e.Message}");
+        }
+    }
+    
+    // Load and optionally display the processed image
+    private void LoadProcessedImage(string imagePath)
+    {
+        var processedImage = Image.LoadFromFile(imagePath);
+        if (processedImage != null)
+        {
+            GD.Print($"✓ Processed image loaded successfully");
+            // You can display it somewhere if needed
+            // For example, update the texture to show the processed result:
+            // lastCapturedImage = processedImage;
+            // textureRect.Texture = ImageTexture.CreateFromImage(processedImage);
+        }
+        else
+        {
+            GD.PrintErr($"Failed to load processed image from: {imagePath}");
         }
     }
     
@@ -233,16 +277,19 @@ public partial class Main : Control
         {
             // Create a timestamp for unique filename
             string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            string filename = $"user://captured_{timestamp}.png";
+            string filename = $"user://captured_{timestamp}.jpg";
             
-            // Save the image
-            Error err = lastCapturedImage.SavePng(filename);
+            // Save the image as JPEG (avoids PNG format issues)
+            Error err = lastCapturedImage.SaveJpg(filename, 0.95f);
             
             if (err == Error.Ok)
             {
                 // Get the actual file path (Godot's user:// maps to a real directory)
                 string realPath = ProjectSettings.GlobalizePath(filename);
                 GD.Print($"✓ Image saved successfully to: {realPath}");
+                
+                // Send processing request to Python
+                ProcessImageWithJersey(realPath, timestamp);
             }
             else
             {
@@ -253,6 +300,35 @@ public partial class Main : Control
             
             // Auto-resume streaming after capture
             ResumeStreaming();
+        }
+    }
+    
+    // Send image to Python for jersey processing
+    private void ProcessImageWithJersey(string imagePath, string timestamp)
+    {
+        if (socket.GetReadyState() == WebSocketPeer.State.Open)
+        {
+            // Prepare output path (still PNG for final result)
+            string outputFilename = $"user://processed_{timestamp}.png";
+            string outputPath = ProjectSettings.GlobalizePath(outputFilename);
+            
+            var command = new Godot.Collections.Dictionary
+            {
+                {"type", "process_image"},
+                {"image_path", imagePath},  // JPEG file from Godot
+                {"jersey", "Arsenal Home.jpg"},  // You can make this dynamic
+                {"output_path", outputPath}
+            };
+            
+            string jsonString = Json.Stringify(command);
+            socket.SendText(jsonString);
+            
+            GD.Print($"📤 Sent image for processing: {imagePath}");
+            GD.Print($"   Output will be saved to: {outputPath}");
+        }
+        else
+        {
+            GD.PrintErr("Cannot send processing request: WebSocket not open.");
         }
     }
     

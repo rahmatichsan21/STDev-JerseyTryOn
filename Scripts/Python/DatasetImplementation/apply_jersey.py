@@ -76,6 +76,9 @@ def fit_jersey_to_shirt_shape(image, jersey, shirt_image):
     mask_3ch = cv2.cvtColor(shirt_mask, cv2.COLOR_GRAY2BGR)
     result = np.where(mask_3ch == 255, result, [0, 0, 0])
     
+    # Ensure result stays uint8 (np.where can change dtype to int32!)
+    result = result.astype(np.uint8)
+    
     jersey_pixels = np.count_nonzero(result.sum(axis=2))
     print(f"✓ Jersey fitted to exact shirt shape: {jersey_pixels} pixels")
     
@@ -155,7 +158,7 @@ def main():
     
     # Load Arsenal jersey
     print(f"\n[5/5] Loading and applying jersey...")
-    jersey = load_jersey("Arsenal Home.jpg")
+    jersey = load_jersey("Brighton Home.jpg")
     if jersey is None:
         return
     

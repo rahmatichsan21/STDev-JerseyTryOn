@@ -262,5 +262,33 @@ def main():
     
     print(f"\nAll visualizations saved to '{OUTPUT_DIR}' folder!")
 
+def detect_shirt_mask_fast(image, pose_landmarks, w, h):
+    """
+    Fast shirt detection for real-time processing (skips GrabCut refinement)
+    
+    Args:
+        image: Input frame (BGR)
+        pose_landmarks: MediaPipe pose landmarks
+        w, h: Frame dimensions
+        
+    Returns:
+        Binary mask of shirt region
+    """
+    # Get shirt keypoints
+    shirt_keypoints = get_shirt_keypoints(pose_landmarks, w, h)
+    if not shirt_keypoints:
+        return np.zeros((h, w), dtype=np.uint8)
+    
+    # Create shirt region mask
+    shirt_region_mask = create_shirt_mask(image, shirt_keypoints)
+    
+    # Quick skin detection
+    skin_mask = detect_skin(image, shirt_region_mask)
+    
+    # Subtract skin from shirt region (no GrabCut refinement for speed)
+    shirt_mask = create_shirt_only_mask(shirt_region_mask, skin_mask)
+    
+    return shirt_mask
+
 if __name__ == "__main__":
     main()
