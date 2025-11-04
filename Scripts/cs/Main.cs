@@ -13,11 +13,9 @@ public partial class Main : Control
 
     private TextureRect textureRect;
     private Button captureButton;
-    private Button realtimeToggleButton;
     
     private bool isCapturing = false;
     private Image lastCapturedImage = null;
-    private bool isRealtimeJerseyEnabled = false;
     
     public override void _Ready()
     {
@@ -316,7 +314,7 @@ public partial class Main : Control
             {
                 {"type", "process_image"},
                 {"image_path", imagePath},  // JPEG file from Godot
-                {"jersey", "Arsenal Home.jpg"},  // You can make this dynamic
+                {"jersey", "Brighton Home.png"},  // Using Brighton Home jersey
                 {"output_path", outputPath}
             };
             

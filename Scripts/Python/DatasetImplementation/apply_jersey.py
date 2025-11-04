@@ -1,202 +1,198 @@
 """
-Simple jersey replacement - directly map jersey texture to shirt region
+Apply Brighton Jersey to Detected Shirt Regions
+================================================
+
+Uses the retrained model to detect shirt (blue regions) and overlay Brighton jersey.
 """
 
 import cv2
 import numpy as np
 from pathlib import Path
-from pose_detection import detect_pose_landmarks
-from detect_shirt_region import get_shirt_keypoints
+import joblib
+import sys
 
-# Paths
-JERSEY_DIR = Path(__file__).parent.parent.parent.parent / "Assets" / "Jerseys" / "PremierLeague" / "Home" / "Processed"
-INPUT_IMAGE = "Dataset_NoBG/Dataset_1-removebg-preview.png"  # Original image for pose detection
-OUTPUT_DIR = "Output"
+sys.path.insert(0, str(Path(__file__).parent))
+from shirt_detector_full import detect_shirt_region_automatic, extract_pixel_features
 
-def load_jersey(jersey_name):
-    """Load processed jersey (already has background removed)"""
-    # Remove extension and add _processed.png
-    base_name = jersey_name.replace('.jpg', '').replace('.png', '')
-    processed_name = f"{base_name}_processed.png"
-    jersey_path = JERSEY_DIR / processed_name
-    
-    jersey = cv2.imread(str(jersey_path))
-    
-    if jersey is None:
-        print(f"✗ Failed to load: {jersey_path}")
-        return None
-    
-    print(f"✓ Loaded processed jersey: {jersey.shape}")
-    return jersey
 
-def fit_jersey_to_shirt_shape(image, jersey, shirt_image):
+def predict_shirt_mask_fast(image, classifier):
     """
-    Fit jersey to EXACTLY match the extracted shirt shape
-    
-    Args:
-        image: Original person image (for canvas size)
-        jersey: Jersey image with background removed
-        shirt_image: The extracted shirt image (shows exact shape we want)
-        
-    Returns:
-        Jersey fitted to exact shirt shape
+    Predict shirt mask using the trained classifier
     """
     h, w = image.shape[:2]
-    print(f"\nImage canvas: {w}x{h}")
     
-    # Get shirt shape from the extracted shirt image
-    gray_shirt = cv2.cvtColor(shirt_image, cv2.COLOR_BGR2GRAY)
-    _, shirt_mask = cv2.threshold(gray_shirt, 10, 255, cv2.THRESH_BINARY)
+    # Get foreground
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    foreground = gray > 20
     
-    # Find shirt contours
+    coords = np.where(foreground)
+    
+    if len(coords[0]) == 0:
+        return np.zeros((h, w), dtype=np.uint8)
+    
+    # Extract features for all foreground pixels
+    pixels = image[coords]
+    features = np.array([extract_pixel_features(px) for px in pixels])
+    
+    # Predict
+    predictions = classifier.predict(features)
+    
+    # Create mask
+    mask = np.zeros((h, w), dtype=np.uint8)
+    mask[coords] = predictions.astype(np.uint8)
+    
+    # Clean up mask
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    
+    return mask
+
+
+def overlay_jersey_on_shirt(original, shirt_mask, jersey_path):
+    """
+    Overlay Brighton jersey on the detected shirt region
+    """
+    # Load jersey
+    jersey = cv2.imread(str(jersey_path), cv2.IMREAD_UNCHANGED)
+    if jersey is None:
+        print(f"ERROR: Could not load jersey from {jersey_path}")
+        return original
+    
+    # Find shirt bounding box
     contours, _ = cv2.findContours(shirt_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
     if len(contours) == 0:
-        print("✗ No shirt contour found")
-        return np.zeros_like(image)
+        return original
     
-    # Get the largest contour (the shirt)
-    shirt_contour = max(contours, key=cv2.contourArea)
+    main_contour = max(contours, key=cv2.contourArea)
+    x, y, w, h = cv2.boundingRect(main_contour)
     
-    # Get bounding rectangle
-    x_s, y_s, w_s, h_s = cv2.boundingRect(shirt_contour)
-    
-    print(f"Shirt shape: {w_s}x{h_s} at position ({x_s}, {y_s})")
+    # Add padding
+    padding = 20
+    x = max(0, x - padding)
+    y = max(0, y - padding)
+    w = min(original.shape[1] - x, w + 2 * padding)
+    h = min(original.shape[0] - y, h + 2 * padding)
     
     # Resize jersey to match shirt dimensions
-    jersey_resized = cv2.resize(jersey, (w_s, h_s), interpolation=cv2.INTER_LANCZOS4)
+    resized_jersey = cv2.resize(jersey, (w, h), interpolation=cv2.INTER_LINEAR)
     
-    # Create output canvas
-    result = np.zeros((h, w, 3), dtype=np.uint8)
+    # Create output
+    result = original.copy()
     
-    # Place resized jersey at shirt position
-    result[y_s:y_s+h_s, x_s:x_s+w_s] = jersey_resized
+    # Extract BGR and alpha
+    if resized_jersey.shape[2] == 4:
+        jersey_bgr = resized_jersey[:, :, :3]
+        jersey_alpha = resized_jersey[:, :, 3] / 255.0
+    else:
+        jersey_bgr = resized_jersey
+        jersey_alpha = np.ones((h, w))
     
-    # Apply shirt mask to match EXACT shape (not just bounding box)
-    mask_3ch = cv2.cvtColor(shirt_mask, cv2.COLOR_GRAY2BGR)
-    result = np.where(mask_3ch == 255, result, [0, 0, 0])
+    # Create region to overlay
+    overlay_region = result[y:y+h, x:x+w]
+    shirt_region_mask = shirt_mask[y:y+h, x:x+w].astype(float)
     
-    # Ensure result stays uint8 (np.where can change dtype to int32!)
-    result = result.astype(np.uint8)
+    # Combine alpha with shirt mask
+    combined_alpha = jersey_alpha * shirt_region_mask
     
-    jersey_pixels = np.count_nonzero(result.sum(axis=2))
-    print(f"✓ Jersey fitted to exact shirt shape: {jersey_pixels} pixels")
+    # Blend jersey onto result
+    for c in range(3):
+        overlay_region[:, :, c] = (
+            combined_alpha * jersey_bgr[:, :, c] +
+            (1 - combined_alpha) * overlay_region[:, :, c]
+        )
+    
+    result[y:y+h, x:x+w] = overlay_region
     
     return result
 
-def apply_jersey(image, jersey, shirt_image):
-    """
-    Apply jersey to exactly match the extracted shirt shape
-    
-    Args:
-        image: Original person image
-        jersey: Jersey image
-        shirt_image: The extracted shirt image showing exact shape
-        
-    Returns:
-        Jersey fitted to shirt shape
-    """
-    # Fit jersey to the EXACT extracted shirt shape
-    result = fit_jersey_to_shirt_shape(image, jersey, shirt_image)
-    
-    return result
 
 def main():
-    print("=" * 60)
-    print("JERSEY REPLACEMENT - BODY-FITTED MODE")
-    print("=" * 60)
+    """Apply Brighton jersey to all images"""
+    base_dir = Path(__file__).parent
+    dataset_dir = base_dir / "IcanDataset_NOBG"
+    output_dir = base_dir / "final_jersey_output"
+    model_path = base_dir / "shirt_detector_model.joblib"
     
-    # Load original image
-    print(f"\n[1/5] Loading image: {INPUT_IMAGE}")
-    image = cv2.imread(INPUT_IMAGE)
+    jersey_path = base_dir.parent.parent.parent / "Assets" / "Jerseys" / "PremierLeague" / "Home_NOBG" / "Brighton Home.png"
     
-    if image is None:
-        print(f"✗ FAILED TO LOAD IMAGE: {INPUT_IMAGE}")
+    output_dir.mkdir(exist_ok=True)
+    
+    print("=" * 80)
+    print("APPLYING BRIGHTON JERSEY TO DETECTED SHIRT REGIONS")
+    print("=" * 80)
+    print()
+    
+    # Load model
+    print("Loading trained model...")
+    if not model_path.exists():
+        print(f"ERROR: Model not found at {model_path}")
+        print("Please run shirt_detector_full.py first to train the model!")
         return
     
-    h, w = image.shape[:2]
-    print(f"✓ Image loaded: {w}x{h}")
+    classifier = joblib.load(model_path)
+    print(f"✓ Model loaded from {model_path}")
     
-    # Detect pose landmarks
-    print(f"\n[2/5] Detecting pose landmarks...")
-    results = detect_pose_landmarks(image)
-    
-    if not results.pose_landmarks:
-        print("✗ No person detected in image")
+    # Load jersey
+    print(f"Loading jersey: {jersey_path.name}")
+    if not jersey_path.exists():
+        print(f"ERROR: Jersey not found at {jersey_path}")
         return
     
-    print("✓ Person detected")
+    jersey = cv2.imread(str(jersey_path), cv2.IMREAD_UNCHANGED)
+    print(f"✓ Jersey loaded: {jersey.shape}")
+    print()
     
-    # Get shirt keypoints
-    print(f"\n[3/5] Extracting shirt keypoints...")
-    shirt_keypoints = get_shirt_keypoints(results.pose_landmarks, w, h)
+    # Process all images
+    print("=" * 80)
+    print("PROCESSING ALL IMAGES")
+    print("=" * 80)
     
-    if not shirt_keypoints:
-        print("✗ Failed to extract shirt keypoints")
-        return
+    image_files = list(dataset_dir.glob("*.png"))
     
-    print("✓ Shirt keypoints extracted")
-    for name, coords in shirt_keypoints.items():
-        print(f"  {name}: ({coords['x']}, {coords['y']})")
+    for idx, img_path in enumerate(image_files, 1):
+        print(f"\n[{idx}/{len(image_files)}] {img_path.name}")
+        
+        # Load image
+        image = cv2.imread(str(img_path))
+        if image is None:
+            print("  ERROR: Could not load image")
+            continue
+        
+        # Predict shirt mask
+        print("  Detecting shirt region...")
+        shirt_mask = predict_shirt_mask_fast(image, classifier)
+        
+        n_shirt = np.sum(shirt_mask == 1)
+        n_total = np.sum(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) > 20)
+        shirt_percent = (n_shirt / n_total * 100) if n_total > 0 else 0
+        print(f"  Shirt detected: {n_shirt}/{n_total} pixels ({shirt_percent:.1f}%)")
+        
+        # Overlay jersey
+        print("  Applying Brighton jersey...")
+        result = overlay_jersey_on_shirt(image, shirt_mask, jersey_path)
+        
+        # Save results
+        cv2.imwrite(str(output_dir / f"result_{img_path.name}"), result)
+        cv2.imwrite(str(output_dir / f"mask_{img_path.name}"), shirt_mask * 255)
+        
+        # Create comparison
+        h_resize = 300
+        w_resize = int(300 * image.shape[1] / image.shape[0])
+        comparison = np.hstack([
+            cv2.resize(image, (w_resize, h_resize)),
+            cv2.resize(result, (w_resize, h_resize))
+        ])
+        cv2.imwrite(str(output_dir / f"compare_{img_path.name}"), comparison)
+        
+        print(f"  ✓ Saved results")
     
-    # Load extracted shirt image (the EXACT shape we want to match)
-    print(f"\n[4/5] Loading extracted shirt shape...")
-    shirt_extracted_path = f"{OUTPUT_DIR}/7_final_extracted.png"
-    shirt_image = cv2.imread(shirt_extracted_path)
-    
-    if shirt_image is None:
-        # Try alternative path
-        shirt_extracted_path = f"{OUTPUT_DIR}/6_final_extracted.png"
-        shirt_image = cv2.imread(shirt_extracted_path)
-    
-    if shirt_image is None:
-        print(f"✗ Extracted shirt image not found!")
-        print(f"   Please run detect_actual_shirt.py first")
-        return
-    
-    print(f"✓ Loaded extracted shirt: {shirt_image.shape}")
-    
-    # Load Arsenal jersey
-    print(f"\n[5/5] Loading and applying jersey...")
-    jersey = load_jersey("Brighton Home.jpg")
-    if jersey is None:
-        return
-    
-    print(f"  Jersey loaded: {jersey.shape}")
-    
-    # Apply jersey to match exact shirt shape
-    result = apply_jersey(image, jersey, shirt_image)
-    
-    print("\n" + "=" * 60)
-    print("PROCESSING COMPLETE")
-    print("=" * 60)
-    
-    # Save result
-    import os
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
-    output_path = f"{OUTPUT_DIR}/jersey_result.png"
-    cv2.imwrite(output_path, result)
-    print(f"\n✓ Saved: {output_path}")
-    
-    # Create visualization with keypoints
-    debug_image = image.copy()
-    for name, coords in shirt_keypoints.items():
-        x, y = coords['x'], coords['y']
-        cv2.circle(debug_image, (x, y), 8, (0, 255, 0), -1)
-        cv2.putText(debug_image, name[:8], (x+10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
-    
-    cv2.imwrite(f"{OUTPUT_DIR}/debug_keypoints.png", debug_image)
-    print(f"✓ Saved keypoints debug: {OUTPUT_DIR}/debug_keypoints.png")
-    
-    # Save comparison
-    comparison = np.hstack([image, result])
-    cv2.imwrite(f"{OUTPUT_DIR}/comparison.png", comparison)
-    print(f"✓ Saved comparison: {OUTPUT_DIR}/comparison.png")
-    
-    print(f"\n{'=' * 60}")
-    print("Run overlay_jersey.py next to combine with original image!")
-    print(f"{'=' * 60}")
+    print("\n" + "=" * 80)
+    print("✓ COMPLETE!")
+    print(f"✓ Processed {len(image_files)} images")
+    print(f"✓ Results saved to: {output_dir}")
+    print("=" * 80)
+
 
 if __name__ == "__main__":
     main()
