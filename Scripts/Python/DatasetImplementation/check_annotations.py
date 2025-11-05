@@ -43,6 +43,11 @@ def visualize_annotations(image_path, output_path):
     # Overlay masks with transparency
     overlay = image.copy()
     
+    # Background = BLACK (where image is black/empty)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    background = gray <= 20
+    overlay[background] = [0, 0, 0]
+    
     # Hair = RED
     overlay[hair_mask > 0] = [0, 0, 255]
     
@@ -76,16 +81,19 @@ def visualize_annotations(image_path, output_path):
     
     # Draw legend
     legend_y = 30
-    cv2.putText(vis, "RED = HAIR", (10, legend_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-    cv2.putText(vis, "GREEN = SKIN", (10, legend_y + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-    cv2.putText(vis, "BLUE = SHIRT", (10, legend_y + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-    cv2.putText(vis, "YELLOW = NECK LINE", (10, legend_y + 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+    cv2.putText(vis, "BLACK = BACKGROUND", (10, legend_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+    cv2.putText(vis, "RED = HAIR", (10, legend_y + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+    cv2.putText(vis, "GREEN = SKIN", (10, legend_y + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+    cv2.putText(vis, "BLUE = SHIRT", (10, legend_y + 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+    cv2.putText(vis, "YELLOW = NECK LINE", (10, legend_y + 120), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
     
     # Count pixels
     n_hair = np.sum(hair_mask > 0)
     n_skin = np.sum(skin_mask > 0)
     n_shirt = np.sum(shirt_mask > 0)
+    n_bg = np.sum(background)
     
+    cv2.putText(vis, f"Background: {n_bg} px", (10, h - 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
     cv2.putText(vis, f"Hair: {n_hair} px", (10, h - 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
     cv2.putText(vis, f"Skin: {n_skin} px", (10, h - 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
     cv2.putText(vis, f"Shirt: {n_shirt} px", (10, h - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
