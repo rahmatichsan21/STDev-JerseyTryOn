@@ -1,0 +1,100 @@
+[gd_scene load_steps=12 format=3 uid="uid://dy763a3c8x275"]
+
+[ext_resource type="FontFile" uid="uid://g24v5d5ub0qj" path="res://Assets/Radikal Fonts/RadikalTrial-Bold-BF642254c05f85f.otf" id="1_uiy8u"]
+[ext_resource type="Script" path="res://Scripts/cs/button.cs" id="2_170lx"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_k8lw6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ukxgw"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hj5ep"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(1, 1, 1, 0.6)
+shadow_size = 3
+shadow_offset = Vector2(-2, -2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_amaw6"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.784314, 0.784314, 0.784314, 1)
+shadow_size = 3
+shadow_offset = Vector2(-2, -2)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tsq3h"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lxslc"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_atllt"]
+bg_color = Color(0.882353, 0.882353, 0.882353, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.784314, 0.784314, 0.784314, 1)
+shadow_size = 3
+shadow_offset = Vector2(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oa32p"]
+bg_color = Color(0.704126, 0.493535, 0.914708, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 3
+shadow_offset = Vector2(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h2lnr"]
+bg_color = Color(0.960784, 0.960784, 0.960784, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.784314, 0.784314, 0.784314, 1)
+shadow_size = 3
+shadow_offset = Vector2(2, 2)
+
+[node name="Button" type="Button"]
+offset_right = 250.0
+offset_bottom = 80.0
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_uiy8u")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/focus = SubResource("StyleBoxEmpty_k8lw6")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ukxgw")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hj5ep")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_amaw6")
+theme_override_styles/normal = SubResource("StyleBoxFlat_hj5ep")
+script = ExtResource("2_170lx")
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_uiy8u")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/focus = SubResource("StyleBoxEmpty_tsq3h")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_lxslc")
+theme_override_styles/hover = SubResource("StyleBoxFlat_atllt")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_oa32p")
+theme_override_styles/normal = SubResource("StyleBoxFlat_h2lnr")

@@ -1,0 +1,98 @@
+[gd_scene load_steps=11 format=3 uid="uid://udffvi5k2x8t"]
+
+[ext_resource type="Script" path="res://Scripts/cs/Home.cs" id="1_68hax"]
+[ext_resource type="Texture2D" uid="uid://btq2nxwrb3myt" path="res://Assets/Background/bg.jpg" id="1_rene2"]
+[ext_resource type="PackedScene" uid="uid://dy763a3c8x275" path="res://Scene/button.tscn" id="2_j2kmi"]
+[ext_resource type="FontFile" uid="uid://188sbpe3aiv8" path="res://Assets/Radikal Fonts/RadikalTrial-Regular-BF642254c157251.otf" id="3_ih5cc"]
+[ext_resource type="FontFile" uid="uid://bqv2k7x1ujicb" path="res://Assets/Radikal Fonts/RadikalTrial-Black-BF642254c139184.otf" id="4_1d683"]
+[ext_resource type="FontFile" uid="uid://o1muv7he5pgo" path="res://Assets/Radikal Fonts/RadikalTrial-RegularItalic-BF642254c17ede3.otf" id="5_n7aw5"]
+[ext_resource type="FontFile" uid="uid://c35el3ftgynbx" path="res://Assets/Radikal Fonts/RadikalTrial-BoldItalic-BF642254c180360.otf" id="6_85kn3"]
+[ext_resource type="Texture2D" uid="uid://b0gljip7fcinb" path="res://Assets/premier-league-seeklogo.png" id="6_hcqf5"]
+[ext_resource type="FontFile" uid="uid://g24v5d5ub0qj" path="res://Assets/Radikal Fonts/RadikalTrial-Bold-BF642254c05f85f.otf" id="7_gjvao"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_355wd"]
+texture = ExtResource("1_rene2")
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_68hax")
+
+[node name="Panel" type="Panel" parent="."]
+modulate = Color(1, 1, 1, 0.705882)
+self_modulate = Color(1, 1, 1, 0.627451)
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_355wd")
+
+[node name="Start" parent="." instance=ExtResource("2_j2kmi")]
+layout_mode = 0
+offset_left = 835.0
+offset_top = 500.0
+offset_right = 1085.0
+offset_bottom = 580.0
+text = "Start"
+script = null
+
+[node name="How To Use" parent="." instance=ExtResource("2_j2kmi")]
+layout_mode = 0
+offset_left = 835.0
+offset_top = 620.0
+offset_right = 1085.0
+offset_bottom = 700.0
+text = "How To Use"
+script = null
+
+[node name="About" parent="." instance=ExtResource("2_j2kmi")]
+layout_mode = 0
+offset_left = 835.0
+offset_top = 740.0
+offset_right = 1085.0
+offset_bottom = 820.0
+text = "About"
+script = null
+
+[node name="Exit" parent="." instance=ExtResource("2_j2kmi")]
+layout_mode = 0
+offset_left = 835.0
+offset_top = 860.0
+offset_right = 1085.0
+offset_bottom = 940.0
+text = "Exit"
+script = null
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+top_level = true
+layout_mode = 0
+offset_left = 660.0
+offset_top = 370.0
+offset_right = 1260.0
+offset_bottom = 470.0
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_ih5cc")
+theme_override_fonts/mono_font = ExtResource("4_1d683")
+theme_override_fonts/italics_font = ExtResource("5_n7aw5")
+theme_override_fonts/bold_italics_font = ExtResource("6_85kn3")
+theme_override_fonts/bold_font = ExtResource("7_gjvao")
+theme_override_font_sizes/bold_italics_font_size = 45
+theme_override_font_sizes/italics_font_size = 45
+theme_override_font_sizes/mono_font_size = 45
+theme_override_font_sizes/normal_font_size = 45
+theme_override_font_sizes/bold_font_size = 45
+bbcode_enabled = true
+text = "[center][b][color=3D195B]CHOOSE YOUR JERSEY !![/color][/b][/center]"
+
+[node name="Premier-league-seeklogo" type="Sprite2D" parent="."]
+position = Vector2(960, 210)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("6_hcqf5")
+
+[connection signal="pressed" from="Start" to="." method="OnStartButtonPressed"]
+[connection signal="pressed" from="How To Use" to="." method="OnHowToUseButtonPressed"]
+[connection signal="pressed" from="About" to="." method="OnAboutButtonPressed"]
+[connection signal="pressed" from="Exit" to="." method="OnExitButtonPressed"]

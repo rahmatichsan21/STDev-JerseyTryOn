@@ -1,0 +1,39 @@
+[gd_scene load_steps=5 format=3 uid="uid://wsnl1f4rtx4t"]
+
+[ext_resource type="Script" path="res://Scripts/cs/howToUse.cs" id="1_31ocr"]
+[ext_resource type="Texture2D" uid="uid://bjxexofjgvom1" path="res://Assets/Background/bg2.jpg" id="1_gi5g5"]
+[ext_resource type="PackedScene" uid="uid://dy763a3c8x275" path="res://Scene/button.tscn" id="2_2jcy1"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_p0y6h"]
+texture = ExtResource("1_gi5g5")
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_31ocr")
+
+[node name="Panel" type="Panel" parent="."]
+modulate = Color(1, 1, 1, 0.705882)
+self_modulate = Color(1, 1, 1, 0.705882)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_p0y6h")
+
+[node name="BackHome" parent="." instance=ExtResource("2_2jcy1")]
+layout_mode = 0
+offset_left = 835.0
+offset_top = 960.0
+offset_right = 1085.0
+offset_bottom = 1040.0
+text = "Back"
+script = null
+
+[connection signal="pressed" from="BackHome" to="." method="OnBack2HomeButtonPressed"]

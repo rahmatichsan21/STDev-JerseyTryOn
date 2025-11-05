@@ -1,0 +1,218 @@
+[gd_scene load_steps=11 format=3 uid="uid://c7aqkroy44tm"]
+
+[ext_resource type="Script" path="res://Scripts/cs/about.cs" id="1_1d2oo"]
+[ext_resource type="Texture2D" uid="uid://ce85rdcfmyk0v" path="res://Assets/Background/bg3.jpg" id="1_rueeq"]
+[ext_resource type="PackedScene" uid="uid://dy763a3c8x275" path="res://Scene/button.tscn" id="2_0y21c"]
+[ext_resource type="FontFile" uid="uid://188sbpe3aiv8" path="res://Assets/Radikal Fonts/RadikalTrial-Regular-BF642254c157251.otf" id="3_1mxpy"]
+[ext_resource type="FontFile" uid="uid://bqv2k7x1ujicb" path="res://Assets/Radikal Fonts/RadikalTrial-Black-BF642254c139184.otf" id="4_c0sfn"]
+[ext_resource type="FontFile" uid="uid://o1muv7he5pgo" path="res://Assets/Radikal Fonts/RadikalTrial-RegularItalic-BF642254c17ede3.otf" id="5_h2kot"]
+[ext_resource type="FontFile" uid="uid://c35el3ftgynbx" path="res://Assets/Radikal Fonts/RadikalTrial-BoldItalic-BF642254c180360.otf" id="6_tx1o3"]
+[ext_resource type="FontFile" uid="uid://g24v5d5ub0qj" path="res://Assets/Radikal Fonts/RadikalTrial-Bold-BF642254c05f85f.otf" id="7_cxg2x"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fbejk"]
+texture = ExtResource("1_rueeq")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_xmulu"]
+load_path = "res://.godot/imported/lim_300x300.png-c91bd036b0b7da135a678a8c5de88431.ctex"
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1d2oo")
+
+[node name="Panel" type="Panel" parent="."]
+modulate = Color(1, 1, 1, 0.392157)
+self_modulate = Color(1, 1, 1, 0.470588)
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_fbejk")
+
+[node name="BackHome" parent="." instance=ExtResource("2_0y21c")]
+layout_mode = 0
+offset_left = 835.0
+offset_top = 900.0
+offset_right = 1085.0
+offset_bottom = 980.0
+text = "Back"
+script = null
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+top_level = true
+layout_mode = 0
+offset_left = 360.0
+offset_top = 180.0
+offset_right = 1560.0
+offset_bottom = 280.0
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_1mxpy")
+theme_override_fonts/mono_font = ExtResource("4_c0sfn")
+theme_override_fonts/italics_font = ExtResource("5_h2kot")
+theme_override_fonts/bold_italics_font = ExtResource("6_tx1o3")
+theme_override_fonts/bold_font = ExtResource("7_cxg2x")
+theme_override_font_sizes/bold_italics_font_size = 65
+theme_override_font_sizes/italics_font_size = 65
+theme_override_font_sizes/mono_font_size = 65
+theme_override_font_sizes/normal_font_size = 65
+theme_override_font_sizes/bold_font_size = 65
+bbcode_enabled = true
+text = "[center][b][color=3D195B]STDEV : THE PROCRASTINATOR[/color][/b][/center]"
+
+[node name="lim" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 350.0
+offset_right = 1160.0
+offset_bottom = 850.0
+
+[node name="TextureRect" type="TextureRect" parent="lim"]
+light_mask = 2
+visibility_layer = 2
+layout_mode = 2
+texture = SubResource("CompressedTexture2D_xmulu")
+stretch_mode = 3
+
+[node name="name" type="RichTextLabel" parent="lim"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_1mxpy")
+theme_override_fonts/mono_font = ExtResource("4_c0sfn")
+theme_override_fonts/italics_font = ExtResource("5_h2kot")
+theme_override_fonts/bold_italics_font = ExtResource("6_tx1o3")
+theme_override_fonts/bold_font = ExtResource("7_cxg2x")
+theme_override_font_sizes/bold_italics_font_size = 21
+theme_override_font_sizes/italics_font_size = 21
+theme_override_font_sizes/mono_font_size = 21
+theme_override_font_sizes/normal_font_size = 21
+theme_override_font_sizes/bold_font_size = 21
+bbcode_enabled = true
+text = "[center][b]Muhammad Aslim Salman
+231524014[/b][/center]
+"
+
+[node name="desc" type="RichTextLabel" parent="lim"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_1mxpy")
+theme_override_fonts/mono_font = ExtResource("4_c0sfn")
+theme_override_fonts/italics_font = ExtResource("5_h2kot")
+theme_override_fonts/bold_italics_font = ExtResource("6_tx1o3")
+theme_override_fonts/bold_font = ExtResource("7_cxg2x")
+theme_override_font_sizes/bold_italics_font_size = 15
+theme_override_font_sizes/italics_font_size = 15
+theme_override_font_sizes/mono_font_size = 15
+theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/bold_font_size = 15
+bbcode_enabled = true
+text = "[center][i]Monkey see, Monkey Do.[/i][/center]"
+
+[node name="dede" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 300.0
+offset_top = 350.0
+offset_right = 700.0
+offset_bottom = 850.0
+
+[node name="TextureRect" type="TextureRect" parent="dede"]
+light_mask = 2
+visibility_layer = 2
+layout_mode = 2
+texture = SubResource("CompressedTexture2D_xmulu")
+stretch_mode = 3
+
+[node name="name" type="RichTextLabel" parent="dede"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_1mxpy")
+theme_override_fonts/mono_font = ExtResource("4_c0sfn")
+theme_override_fonts/italics_font = ExtResource("5_h2kot")
+theme_override_fonts/bold_italics_font = ExtResource("6_tx1o3")
+theme_override_fonts/bold_font = ExtResource("7_cxg2x")
+theme_override_font_sizes/bold_italics_font_size = 21
+theme_override_font_sizes/italics_font_size = 21
+theme_override_font_sizes/mono_font_size = 21
+theme_override_font_sizes/normal_font_size = 21
+theme_override_font_sizes/bold_font_size = 21
+bbcode_enabled = true
+text = "[center][b]Jizdan Mulkan Nailan
+231524011[/b][/center]
+"
+
+[node name="desc" type="RichTextLabel" parent="dede"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_1mxpy")
+theme_override_fonts/mono_font = ExtResource("4_c0sfn")
+theme_override_fonts/italics_font = ExtResource("5_h2kot")
+theme_override_fonts/bold_italics_font = ExtResource("6_tx1o3")
+theme_override_fonts/bold_font = ExtResource("7_cxg2x")
+theme_override_font_sizes/bold_italics_font_size = 15
+theme_override_font_sizes/italics_font_size = 15
+theme_override_font_sizes/mono_font_size = 15
+theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/bold_font_size = 15
+bbcode_enabled = true
+text = "[center][i]Monkey see, Monkey Do.[/i][/center]"
+
+[node name="ican" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 1220.0
+offset_top = 350.0
+offset_right = 1620.0
+offset_bottom = 850.0
+
+[node name="TextureRect" type="TextureRect" parent="ican"]
+light_mask = 2
+visibility_layer = 2
+layout_mode = 2
+texture = SubResource("CompressedTexture2D_xmulu")
+stretch_mode = 3
+
+[node name="name" type="RichTextLabel" parent="ican"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_1mxpy")
+theme_override_fonts/mono_font = ExtResource("4_c0sfn")
+theme_override_fonts/italics_font = ExtResource("5_h2kot")
+theme_override_fonts/bold_italics_font = ExtResource("6_tx1o3")
+theme_override_fonts/bold_font = ExtResource("7_cxg2x")
+theme_override_font_sizes/bold_italics_font_size = 21
+theme_override_font_sizes/italics_font_size = 21
+theme_override_font_sizes/mono_font_size = 21
+theme_override_font_sizes/normal_font_size = 21
+theme_override_font_sizes/bold_font_size = 21
+bbcode_enabled = true
+text = "[center][b]Muhammad Ichsan Rahmat Ramadhan
+231524015[/b][/center]
+"
+
+[node name="desc" type="RichTextLabel" parent="ican"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_1mxpy")
+theme_override_fonts/mono_font = ExtResource("4_c0sfn")
+theme_override_fonts/italics_font = ExtResource("5_h2kot")
+theme_override_fonts/bold_italics_font = ExtResource("6_tx1o3")
+theme_override_fonts/bold_font = ExtResource("7_cxg2x")
+theme_override_font_sizes/bold_italics_font_size = 15
+theme_override_font_sizes/italics_font_size = 15
+theme_override_font_sizes/mono_font_size = 15
+theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/bold_font_size = 15
+bbcode_enabled = true
+text = "[center][i]Monkey see, Monkey Do.[/i][/center]"
+
+[connection signal="pressed" from="BackHome" to="." method="OnBack2HomeButtonPressed"]

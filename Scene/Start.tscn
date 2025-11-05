@@ -1,0 +1,123 @@
+[gd_scene load_steps=11 format=3 uid="uid://6f78fja723bu"]
+
+[ext_resource type="Script" path="res://Scripts/cs/start.cs" id="1_2qaeb"]
+[ext_resource type="Texture2D" uid="uid://biekxbbo3x58c" path="res://Assets/Background/bg4.jpg" id="2_tvhlp"]
+[ext_resource type="FontFile" uid="uid://188sbpe3aiv8" path="res://Assets/Radikal Fonts/RadikalTrial-Regular-BF642254c157251.otf" id="3_jt14r"]
+[ext_resource type="FontFile" uid="uid://bqv2k7x1ujicb" path="res://Assets/Radikal Fonts/RadikalTrial-Black-BF642254c139184.otf" id="4_681at"]
+[ext_resource type="FontFile" uid="uid://o1muv7he5pgo" path="res://Assets/Radikal Fonts/RadikalTrial-RegularItalic-BF642254c17ede3.otf" id="5_1qtcs"]
+[ext_resource type="FontFile" uid="uid://c35el3ftgynbx" path="res://Assets/Radikal Fonts/RadikalTrial-BoldItalic-BF642254c180360.otf" id="6_oai1v"]
+[ext_resource type="FontFile" uid="uid://g24v5d5ub0qj" path="res://Assets/Radikal Fonts/RadikalTrial-Bold-BF642254c05f85f.otf" id="7_y7flj"]
+[ext_resource type="PackedScene" uid="uid://dy763a3c8x275" path="res://Scene/button.tscn" id="8_imvce"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8ev51"]
+texture = ExtResource("2_tvhlp")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bv3rb"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.784314, 0.784314, 0.784314, 1)
+shadow_size = 3
+shadow_offset = Vector2(-2, -2)
+
+[node name="Home" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_2qaeb")
+
+[node name="Panel" type="Panel" parent="."]
+modulate = Color(1, 1, 1, 0.588235)
+self_modulate = Color(1, 1, 1, 0.588235)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_8ev51")
+
+[node name="Headline" type="RichTextLabel" parent="."]
+top_level = true
+layout_mode = 0
+offset_left = 460.0
+offset_top = 80.0
+offset_right = 1460.0
+offset_bottom = 160.0
+theme_override_colors/default_color = Color(0.239216, 0.0980392, 0.356863, 1)
+theme_override_fonts/normal_font = ExtResource("3_jt14r")
+theme_override_fonts/mono_font = ExtResource("4_681at")
+theme_override_fonts/italics_font = ExtResource("5_1qtcs")
+theme_override_fonts/bold_italics_font = ExtResource("6_oai1v")
+theme_override_fonts/bold_font = ExtResource("7_y7flj")
+theme_override_font_sizes/bold_italics_font_size = 45
+theme_override_font_sizes/italics_font_size = 45
+theme_override_font_sizes/mono_font_size = 45
+theme_override_font_sizes/normal_font_size = 45
+theme_override_font_sizes/bold_font_size = 45
+bbcode_enabled = true
+text = "[center][b][color=3D195B]CHOOSE YOUR JERSEY !![/color][/b][/center]"
+
+[node name="CameraFrame" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 125.0
+offset_top = 200.0
+offset_right = 1405.0
+offset_bottom = 920.0
+
+[node name="BackHome" parent="." instance=ExtResource("8_imvce")]
+layout_mode = 0
+offset_left = 1500.0
+offset_top = 800.0
+offset_right = 1750.0
+offset_bottom = 880.0
+text = "Back"
+script = null
+
+[node name="Capture" parent="." instance=ExtResource("8_imvce")]
+layout_mode = 0
+offset_left = 1500.0
+offset_top = 680.0
+offset_right = 1750.0
+offset_bottom = 760.0
+theme_override_styles/pressed = SubResource("StyleBoxFlat_bv3rb")
+text = "Jepret"
+script = null
+
+[node name="LogLabel" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 125.0
+offset_top = 960.0
+offset_right = 1025.0
+offset_bottom = 1060.0
+theme_override_colors/default_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+fit_content = true
+scroll_following = true
+
+[node name="StartServer" parent="." instance=ExtResource("8_imvce")]
+layout_mode = 0
+offset_left = 1500.0
+offset_top = 440.0
+offset_right = 1750.0
+offset_bottom = 520.0
+text = "Server Start"
+script = null
+
+[node name="StopServer" parent="." instance=ExtResource("8_imvce")]
+layout_mode = 0
+offset_left = 1500.0
+offset_top = 560.0
+offset_right = 1750.0
+offset_bottom = 640.0
+text = "Server Stop"
+script = null
+
+[connection signal="pressed" from="BackHome" to="." method="OnBack2HomeButtonPressed"]
+[connection signal="pressed" from="Capture" to="." method="OnCaptureButtonPressed"]
