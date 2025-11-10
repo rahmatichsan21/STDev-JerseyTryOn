@@ -9,7 +9,7 @@ public partial class start : Control
 	private Button stopServer;
 	
 	// WebSocket untuk kamera
-	private string websocketUrl = "ws://localhost:8765";
+	private string websocketUrl = "ws://localhost:9001";
 	private WebSocketPeer socket = new WebSocketPeer();
 	private bool isConnected = false;
 
@@ -140,12 +140,12 @@ public partial class start : Control
 			return;
 		}
 		
-		UpdateLog("[color=cyan]Starting Python server...[/color]");
-		GD.Print("Starting Python server...");
+		UpdateLog("[color=cyan]Starting Python camera server...[/color]");
+		GD.Print("Starting Python camera server...");
 		
 		// Get the path to the Python script
 		string projectPath = ProjectSettings.GlobalizePath("res://");
-		string scriptPath = System.IO.Path.Combine(projectPath, "Scripts", "Python", "jersey_filter_server_hybrid.py");
+		string scriptPath = System.IO.Path.Combine(projectPath, "Scripts", "Python", "simple_camera_server.py");
 		
 		// Create process start info
 		var processInfo = new System.Diagnostics.ProcessStartInfo
@@ -169,22 +169,22 @@ public partial class start : Control
 				if (startServer != null) startServer.Disabled = true;
 				if (stopServer != null) stopServer.Disabled = false;
 				
-				UpdateLog("[color=green]✓ Server started successfully![/color]");
-				GD.Print($"Server process started with PID: {serverProcessId}");
+				UpdateLog("[color=green]✓ Camera server started successfully![/color]");
+				GD.Print($"Camera server process started with PID: {serverProcessId}");
 				
 				// Wait a bit for server to initialize, then connect
 				GetTree().CreateTimer(2.0).Timeout += () => ConnectToServer();
 			}
 			else
 			{
-				UpdateLog("[color=red]✗ Failed to start server![/color]");
-				GD.PrintErr("Failed to start server process");
+				UpdateLog("[color=red]✗ Failed to start camera server![/color]");
+				GD.PrintErr("Failed to start camera server process");
 			}
 		}
 		catch (System.Exception e)
 		{
-			UpdateLog($"[color=red]✗ Error starting server: {e.Message}[/color]");
-			GD.PrintErr($"Error starting server: {e.Message}");
+			UpdateLog($"[color=red]✗ Error starting camera server: {e.Message}[/color]");
+			GD.PrintErr($"Error starting camera server: {e.Message}");
 		}
 	}
 	
