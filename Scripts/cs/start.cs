@@ -143,17 +143,21 @@ public partial class start : Control
 		UpdateLog("[color=cyan]Starting Python camera server...[/color]");
 		GD.Print("Starting Python camera server...");
 		
-		// Get the path to the Python script
+		// 1. Dapatkan path ke project
 		string projectPath = ProjectSettings.GlobalizePath("res://");
-		string scriptPath = System.IO.Path.Combine(projectPath, "Scripts", "Python", "simple_camera_server.py");
 		
-		// Create process start info
+		// 2. Arahkan ke file server.py yang BARU (bukan simple_camera_server.py)
+		string scriptPath = System.IO.Path.Combine(projectPath, "Scripts", "Python", "server.py");
+		
+		// 3. Setup proses
 		var processInfo = new System.Diagnostics.ProcessStartInfo
 		{
-			FileName = "py",
-			Arguments = $"-3.11 \"{scriptPath}\"",
+			// Coba pakai "python" jika "py" tidak jalan di komputer Anda
+			FileName = "python", 
+			// Arguments: Jalankan script server.py
+			Arguments = $"\"{scriptPath}\"",
 			UseShellExecute = false,
-			CreateNoWindow = false, // Show console window so user can see server logs
+			CreateNoWindow = false, // Biarkan false agar muncul jendela hitam (console) untuk cek error
 			WorkingDirectory = System.IO.Path.Combine(projectPath, "Scripts", "Python")
 		};
 		
@@ -169,22 +173,20 @@ public partial class start : Control
 				if (startServer != null) startServer.Disabled = true;
 				if (stopServer != null) stopServer.Disabled = false;
 				
-				UpdateLog("[color=green]✓ Camera server started successfully![/color]");
-				GD.Print($"Camera server process started with PID: {serverProcessId}");
+				UpdateLog("[color=green]✓ Camera server started![/color]");
 				
-				// Wait a bit for server to initialize, then connect
+				// Tunggu 2 detik agar server Python siap, lalu konek otomatis
 				GetTree().CreateTimer(2.0).Timeout += () => ConnectToServer();
 			}
 			else
 			{
-				UpdateLog("[color=red]✗ Failed to start camera server![/color]");
-				GD.PrintErr("Failed to start camera server process");
+				UpdateLog("[color=red]✗ Gagal menjalankan Python![/color]");
 			}
 		}
 		catch (System.Exception e)
 		{
-			UpdateLog($"[color=red]✗ Error starting camera server: {e.Message}[/color]");
-			GD.PrintErr($"Error starting camera server: {e.Message}");
+			UpdateLog($"[color=red]✗ Error: {e.Message}[/color]");
+			GD.PrintErr($"Error starting server: {e.Message}");
 		}
 	}
 	
@@ -464,8 +466,12 @@ public partial class start : Control
 		if (processedImage != null)
 		{
 			GD.Print($"✓ Processed image loaded successfully");
-			// Optionally display the processed result in CameraFrame
-			// cameraFrame.Texture = ImageTexture.CreateFromImage(processedImage);
+			
+			// Buat texture dari gambar hasil editan Python
+			var newTexture = ImageTexture.CreateFromImage(processedImage);
+			
+			// Tampilkan langsung ke layar (menggantikan feed kamera)
+			cameraFrame.Texture = newTexture; 
 		}
 		else
 		{
